@@ -24,8 +24,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef __HAIKU__
 #include <FindDirectory.h>
-#elif !defined(_WIN32)
+#elif !defined(_WIN32) && !defined(__amigaos__)
 #include <pwd.h>
+#endif
+
+#ifdef __amigaos__
+// See amiga/amiga_screens.c: SDL2.module's leftover fullscreen screens.
+void amiga_screens_snapshot(void);
+void amiga_screens_close_leftovers(void);
 #endif
 
 #include "SDL.h"
@@ -217,6 +223,16 @@ void engine_setupConfigDirectory()
 		engine_showError(2, dir);
 
 	snprintf(engine.configDirectory, PATH_MAX, "%s/", dir);
+#elif defined(__amigaos__)
+	// Settings and saves beside the program, in its own drawer.
+	(void)userHome;
+	subdir = "Settings";
+
+	snprintf(dir, PATH_MAX, "PROGDIR:%s", subdir);
+	if ((mkdir(dir, S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH) != 0) && (errno != EEXIST))
+		engine_showError(2, dir);
+
+	snprintf(engine.configDirectory, PATH_MAX, "%s/", dir);
 #elif defined(__HAIKU__)
 	subdir = "starfighter";
 
@@ -273,7 +289,12 @@ void engine_setMode()
 
 	engine_setupConfigDirectory();
 
+#ifdef __amigaos__
+	amiga_screens_snapshot();
+#endif
+
 	/* Initialize the SDL library */
+	ATRACE("SDL_Init");
 	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER) < 0)
 	{
 		printf("Couldn't initialize SDL: %s\n", SDL_GetError());
@@ -302,6 +323,7 @@ void engine_setMode()
 
 	screen_adjustDimensions(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);
 
+	ATRACE("SDL_CreateWindow %dx%d resizable, fullscreen %d", screen->w, screen->h, engine.fullScreen);
 	window = SDL_CreateWindow("Project: Starfighter",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		screen->w, screen->h, SDL_WINDOW_RESIZABLE);
@@ -311,14 +333,18 @@ void engine_setMode()
 		exit(1);
 	}
 
+	ATRACE("window %p, SDL_SetWindowIcon", (void *)window);
 	SDL_SetWindowIcon(window, gfx_loadImage("gfx/alienDevice.png"));
+	ATRACE("SDL_SetWindowFullscreen %d", engine.fullScreen);
 	SDL_SetWindowFullscreen(window, engine.fullScreen ? FULLSCREEN : 0);
 
 	renderer_reset();
+	ATRACE("renderer_reset done");
 
 #ifndef NOSOUND
 	if (engine.useAudio)
 	{
+		ATRACE("Mix_OpenAudio");
 		if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 1024) < 0)
 		{
 			printf("Warning: Couldn't set 44100 Hz 16-bit stereo audio - Reason:\n%s\n", Mix_GetError());
@@ -494,5 +520,8 @@ void engine_cleanup()
 	}
 
 	SDL_Quit();
+#ifdef __amigaos__
+	amiga_screens_close_leftovers();
+#endif
 	printf("Thank You for playing Starfighter\n");
 }

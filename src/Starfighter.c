@@ -124,9 +124,12 @@ int main(int argc, char **argv)
 
 	atexit(engine_cleanup);
 
+	ATRACE("gfx_init");
 	gfx_init();
 	engine_setMode(); // Settings get loaded here
+	ATRACE("gfx_loadFont");
 	gfx_loadFont();
+	ATRACE("gfx_loadFont done");
 
 	if ((strcmp(engine.lang, "default") == 0)
 			|| (strcmp(engine.lang, "") == 0))
@@ -150,7 +153,9 @@ int main(int argc, char **argv)
 	}
 
 	gfx_free();
+	ATRACE("audio_loadSounds");
 	audio_loadSounds();
+	ATRACE("audio_loadSounds done");
 
 	weapons_init();
 
