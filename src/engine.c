@@ -24,8 +24,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef __HAIKU__
 #include <FindDirectory.h>
-#elif !defined(_WIN32)
+#elif !defined(_WIN32) && !defined(__amigaos__)
 #include <pwd.h>
+#endif
+
+#ifdef __amigaos__
+// See amiga/amiga_screens.c: SDL2.module's leftover fullscreen screens.
+void amiga_screens_snapshot(void);
+void amiga_screens_close_leftovers(void);
 #endif
 
 #include "SDL.h"
@@ -217,6 +223,16 @@ void engine_setupConfigDirectory()
 		engine_showError(2, dir);
 
 	snprintf(engine.configDirectory, PATH_MAX, "%s/", dir);
+#elif defined(__amigaos__)
+	// Settings and saves beside the program, in its own drawer.
+	(void)userHome;
+	subdir = "Settings";
+
+	snprintf(dir, PATH_MAX, "PROGDIR:%s", subdir);
+	if ((mkdir(dir, S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH) != 0) && (errno != EEXIST))
+		engine_showError(2, dir);
+
+	snprintf(engine.configDirectory, PATH_MAX, "%s/", dir);
 #elif defined(__HAIKU__)
 	subdir = "starfighter";
 
@@ -272,6 +288,10 @@ void engine_setMode()
 	strcpy(engine.configDirectory, "");
 
 	engine_setupConfigDirectory();
+
+#ifdef __amigaos__
+	amiga_screens_snapshot();
+#endif
 
 	/* Initialize the SDL library */
 	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER) < 0)
@@ -494,5 +514,8 @@ void engine_cleanup()
 	}
 
 	SDL_Quit();
+#ifdef __amigaos__
+	amiga_screens_close_leftovers();
+#endif
 	printf("Thank You for playing Starfighter\n");
 }

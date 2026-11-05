@@ -1,0 +1,92 @@
+# Project: Starfighter for AmigaOS 3.x, 68040/68060 + FPU, on OpenGPU's
+# SDL 2 (with SDL2_image and SDL2_mixer).
+#
+#   make -f amiga/Makefile.amigaos -j2 \
+#        STOVE=/path/to/openamigagcc-16.2.0-open4 \
+#        NDK=/path/to/OpenNDK/Include_H SDL2KIT=/path/to/opengpu-sdk
+#
+# STOVE is GFOpenAmigaGCC 16.2.0-open4 or later. SDL2KIT is the OpenGPU
+# developer kit: libSDL2.a, libSDL2_image.a and libSDL2_mixer.a, the
+# program's halves of LIBS:OpenGPU/SDL2.module, SDL2_image.module and
+# SDL2_mixer.module. Built as upstream's configure builds it without
+# SDL_ttf and Pango (-DNOFONT: the bitmap font, English text) and without
+# gettext (amiga/libintl.h). The window is upstream's minimum, 640x480.
+#
+# Output: dist/Starfighter/ (the program, gfx, sound, music, data, ReadMe
+# and the licences, with their icons) and dist/Starfighter.info.
+
+STOVE   ?= $(HOME)/CradleLab/toolchain/openamigagcc-16.2.0-open4-x86_64-linux
+NDK     ?= $(HOME)/CradleLab/gfopensdk/OpenNDK/Include_H
+SDL2KIT ?= /mnt/amigachrome/team2/deps/opengpu-sdk
+CC      = $(STOVE)/bin/m68k-amigaos-gcc
+CPU     ?= -m68040 -m68881
+# -fno-tree-loop-distribute-patterns: GCC 16's loop miscompile (the kit's
+# sdl2-config gives it for GCC 16 too).
+OPT     ?= -O2 -fomit-frame-pointer -fno-tree-loop-distribute-patterns
+
+SCREEN_W ?= 640
+SCREEN_H ?= 480
+DEFS    = -D__amigaos__ -DVERSION=\"2.4\" -DNOFONT -DDATADIR=\"PROGDIR:\" \
+          -DSCREEN_WIDTH=$(SCREEN_W) -DSCREEN_HEIGHT=$(SCREEN_H)
+INC     = -Iamiga -I$(SDL2KIT)/include/SDL2 -I$(NDK)
+CFLAGS  = -noixemul $(OPT) $(CPU) -std=gnu99 $(DEFS) $(INC)
+AMIGAWARN = -Wall -Wextra
+LDFLAGS = -noixemul $(CPU)
+LIBS    = -L$(SDL2KIT)/lib -lSDL2_image -lSDL2_mixer -lSDL2 -lm
+
+DIST    = dist
+OUT     = $(DIST)/Starfighter
+BUILD   = build/amigaos
+OBJDIR  = $(BUILD)/obj
+PROG    = Starfighter
+
+SRC     = $(wildcard src/*.c)
+OBJS    = $(SRC:%.c=$(OBJDIR)/%.o) \
+          $(OBJDIR)/amiga/stack.o $(OBJDIR)/amiga/amiga_screens.o
+
+ICONS   = $(wildcard amiga/icons/*.info)
+DATADIRS = gfx sound music
+
+all: $(OUT)/$(PROG) package
+
+$(OUT)/$(PROG): $(OBJS) | $(OUT)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+
+# Upstream's data (licences in LICENSES): gfx, sound and music as they are,
+# data/credits.txt (the end credits). The TTF font is only for the
+# SDL_ttf build and the locale/ translations only for gettext: both left out.
+package: $(OUT)/$(PROG) $(ICONS) AMIGA_PORT.md COPYING LICENSES README.txt
+	for d in $(DATADIRS); do mkdir -p $(OUT)/$$d && cp -R $$d/. $(OUT)/$$d/ ; done
+	find $(OUT) -name Makefile.am -exec rm -f {} +
+	mkdir -p $(OUT)/data $(OUT)/Settings
+	cp data/credits.txt $(OUT)/data/
+	cp AMIGA_PORT.md $(OUT)/ReadMe
+	cp README.txt $(OUT)/README.txt
+	cp COPYING $(OUT)/COPYING.txt
+	cp LICENSES $(OUT)/LICENSES.txt
+	cp amiga/icons/Starfighter.info amiga/icons/ReadMe.info \
+	   amiga/icons/README.txt.info amiga/icons/COPYING.txt.info \
+	   amiga/icons/LICENSES.txt.info $(OUT)/
+	cd $(OUT) && find . -mindepth 1 -type d | while read d; do cp $(CURDIR)/amiga/icons/Data.info "$$d.info"; done
+	cp amiga/icons/Starfighter-drawer.info $(DIST)/Starfighter.info
+
+$(OBJDIR)/amiga/%.o: amiga/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(AMIGAWARN) -c -o $@ $<
+
+$(OBJDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+objs: $(OBJS)
+
+$(OUT):
+	mkdir -p $@
+
+clean:
+	rm -rf $(BUILD) $(OUT)/$(PROG)
+
+distclean: clean
+	rm -rf $(DIST)
+
+.PHONY: all package objs clean distclean
