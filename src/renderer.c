@@ -30,9 +30,27 @@ SDL_Texture *renderer_texture;
 
 void renderer_update()
 {
+#ifdef AMIGA_TRACE
+	static int traced;
+	if (traced < 4)
+		ATRACE("renderer_update %d: SDL_UpdateTexture pitch %d", traced, screen->pitch);
+#endif
 	SDL_UpdateTexture(renderer_texture, NULL, screen->pixels, screen->pitch);
+#ifdef AMIGA_TRACE
+	if (traced < 4)
+		ATRACE("renderer_update %d: SDL_RenderCopy", traced);
+#endif
 	SDL_RenderCopy(renderer, renderer_texture, NULL, NULL);
+#ifdef AMIGA_TRACE
+	if (traced < 4)
+		ATRACE("renderer_update %d: SDL_RenderPresent", traced);
+#endif
 	SDL_RenderPresent(renderer);
+#ifdef AMIGA_TRACE
+	if (traced < 4)
+		ATRACE("renderer_update %d: done", traced);
+	traced++;
+#endif
 }
 
 // Call after screen_adjustDimensions.
@@ -40,13 +58,23 @@ void renderer_reset()
 {
 	if (renderer == NULL)
 	{
+		ATRACE("SDL_CreateRenderer");
 		renderer = SDL_CreateRenderer(window, -1, 0);
+#ifdef AMIGA_TRACE
+		{
+			SDL_RendererInfo ri;
+			if (renderer != NULL && SDL_GetRendererInfo(renderer, &ri) == 0)
+				ATRACE("renderer %s flags %x max texture %dx%d", ri.name, (unsigned)ri.flags,
+					ri.max_texture_width, ri.max_texture_height);
+		}
+#endif
 		if (renderer == NULL)
 		{
 			printf("Could not create renderer: %s\n", SDL_GetError());
 			exit(1);
 		}
 	}
+	ATRACE("SDL_RenderSetLogicalSize %dx%d", screen->w, screen->h);
 	SDL_RenderSetLogicalSize(renderer, screen->w, screen->h);
 
 	if (renderer_texture != NULL)
@@ -55,6 +83,7 @@ void renderer_reset()
 		renderer_texture = NULL;
 	}
 
+	ATRACE("SDL_CreateTexture ARGB8888 streaming %dx%d", screen->w, screen->h);
 	renderer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, screen->w, screen->h);
 	if (renderer_texture == NULL)
 	{

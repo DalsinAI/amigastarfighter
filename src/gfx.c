@@ -715,7 +715,10 @@ SDL_Surface *gfx_loadImage(const char *filename)
 {
 	SDL_Surface *image, *newImage;
 
+	ATRACE("IMG_Load %s", filename);
 	image = IMG_Load(filename);
+	if (image != NULL)
+		ATRACE("  %dx%d %s", image->w, image->h, SDL_GetPixelFormatName(image->format->format));
 
 	if (image == NULL) {
 		printf("Couldn't load %s: %s\n", filename, SDL_GetError());

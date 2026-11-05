@@ -294,6 +294,7 @@ void engine_setMode()
 #endif
 
 	/* Initialize the SDL library */
+	ATRACE("SDL_Init");
 	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_JOYSTICK|SDL_INIT_GAMECONTROLLER) < 0)
 	{
 		printf("Couldn't initialize SDL: %s\n", SDL_GetError());
@@ -322,6 +323,7 @@ void engine_setMode()
 
 	screen_adjustDimensions(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT);
 
+	ATRACE("SDL_CreateWindow %dx%d resizable, fullscreen %d", screen->w, screen->h, engine.fullScreen);
 	window = SDL_CreateWindow("Project: Starfighter",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		screen->w, screen->h, SDL_WINDOW_RESIZABLE);
@@ -331,14 +333,18 @@ void engine_setMode()
 		exit(1);
 	}
 
+	ATRACE("window %p, SDL_SetWindowIcon", (void *)window);
 	SDL_SetWindowIcon(window, gfx_loadImage("gfx/alienDevice.png"));
+	ATRACE("SDL_SetWindowFullscreen %d", engine.fullScreen);
 	SDL_SetWindowFullscreen(window, engine.fullScreen ? FULLSCREEN : 0);
 
 	renderer_reset();
+	ATRACE("renderer_reset done");
 
 #ifndef NOSOUND
 	if (engine.useAudio)
 	{
+		ATRACE("Mix_OpenAudio");
 		if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 1024) < 0)
 		{
 			printf("Warning: Couldn't set 44100 Hz 16-bit stereo audio - Reason:\n%s\n", Mix_GetError());

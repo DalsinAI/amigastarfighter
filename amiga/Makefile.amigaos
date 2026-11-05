@@ -28,8 +28,13 @@ SCREEN_W ?= 640
 SCREEN_H ?= 480
 DEFS    = -D__amigaos__ -DVERSION=\"2.4\" -DNOFONT -DDATADIR=\"PROGDIR:\" \
           -DSCREEN_WIDTH=$(SCREEN_W) -DSCREEN_HEIGHT=$(SCREEN_H)
+# TRACE=1: PROGDIR:sftrace.txt, each step of the SDL set-up (amiga_trace.h).
+TRACE   ?=
+ifneq ($(TRACE),)
+DEFS    += -DAMIGA_TRACE
+endif
 INC     = -Iamiga -I$(SDL2KIT)/include/SDL2 -I$(NDK)
-CFLAGS  = -noixemul $(OPT) $(CPU) -std=gnu99 $(DEFS) $(INC)
+CFLAGS  = -noixemul $(OPT) $(CPU) -std=gnu99 $(DEFS) $(INC) -include amiga/amiga_trace.h
 AMIGAWARN = -Wall -Wextra
 LDFLAGS = -noixemul $(CPU)
 LIBS    = -L$(SDL2KIT)/lib -lSDL2_image -lSDL2_mixer -lSDL2 -lm
@@ -42,7 +47,8 @@ PROG    = Starfighter
 
 SRC     = $(wildcard src/*.c)
 OBJS    = $(SRC:%.c=$(OBJDIR)/%.o) \
-          $(OBJDIR)/amiga/stack.o $(OBJDIR)/amiga/amiga_screens.o
+          $(OBJDIR)/amiga/stack.o $(OBJDIR)/amiga/amiga_screens.o \
+          $(OBJDIR)/amiga/amiga_trace.o
 
 ICONS   = $(wildcard amiga/icons/*.info)
 DATADIRS = gfx sound music
@@ -53,11 +59,15 @@ $(OUT)/$(PROG): $(OBJS) | $(OUT)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
 # Upstream's data (licences in LICENSES): gfx, sound and music as they are,
-# data/credits.txt (the end credits). The TTF font is only for the
+# data/credits.txt (the end credits). amiga/tools/png_rgba.py stores the
+# 8-bit RGB PNGs in the drawer as RGBA (same pixels, opaque):
+# SDL2_image.module 0.6 damages the host's heap on RGB rows that are not a
+# multiple of 4 bytes (see AMIGA_PORT.md). The TTF font is only for the
 # SDL_ttf build and the locale/ translations only for gettext: both left out.
-package: $(OUT)/$(PROG) $(ICONS) AMIGA_PORT.md COPYING LICENSES README.txt
+package: $(OUT)/$(PROG) $(ICONS) AMIGA_PORT.md COPYING LICENSES README.txt amiga/tools/png_rgba.py
 	for d in $(DATADIRS); do mkdir -p $(OUT)/$$d && cp -R $$d/. $(OUT)/$$d/ ; done
 	find $(OUT) -name Makefile.am -exec rm -f {} +
+	python3 amiga/tools/png_rgba.py $(OUT)/gfx
 	mkdir -p $(OUT)/data $(OUT)/Settings
 	cp data/credits.txt $(OUT)/data/
 	cp AMIGA_PORT.md $(OUT)/ReadMe
