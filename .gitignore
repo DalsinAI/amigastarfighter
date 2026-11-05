@@ -1,0 +1,52 @@
+build
+dist
+*.o
+*.pak
+*.mo
+starfighter
+src/starfighter
+
+# Dolphin .directory
+.directory
+
+# Backups
+*~
+
+# Autoconf / Automake
+aclocal.m4
+autom4te.cache
+compile
+config.guess
+config.h
+config.h.in
+config.log
+config.status
+config.sub
+configure
+depcomp
+install-sh
+Makefile
+Makefile.in
+missing
+stamp-h1
+config.h.in~
+src/Makefile
+src/Makefile.in
+src/.deps
+src/conf
+misc/Makefile
+misc/Makefile.in
+misc/.deps
+
+# Mac OS X
+*.DS_Store
+
+# Xcode
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+project.xcworkspace/
+xcuserdata/
+*.xcuserdatad
