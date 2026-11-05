@@ -106,7 +106,7 @@ How to build
          STOVE=/path/to/openamigagcc-16.2.0-open4 \
          NDK=/path/to/OpenNDK/Include_H SDL2KIT=/path/to/opengpu-sdk
 
-The defaults are the AmigaChrome Team 2 paths. The icons are made with
+The defaults are the AmiCradle Team 2 paths. The icons are made with
 amicradle's port_icons.py from amiga/icons/icons.json.
 
 Data and licences
