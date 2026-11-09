@@ -32,6 +32,26 @@ The settings (conf) and the saved games (saveNN.sav, text files) go in the
 drawer's Settings drawer. The full-screen option is in the title menu's
 options (and F11).
 
+
+Standard keys
+-------------
+
+Every AmiCradle game has the same keys on Right Amiga (GFOpenUp's
+SDL2.module, after 0.8.26):
+
+- Right Amiga + F: window or full screen, remembered for next time
+- Right Amiga + P: pause (Right Amiga + P again goes on)
+- Right Amiga + Q: quit
+- Right Amiga + M: free the mouse pointer, or let the game take it again
+- Right Amiga + S: a screenshot in the drawer's Screenshots
+- Help: this game's keys (the drawer's Controls file)
+- Right Amiga + F1, F2: F11, F12; Right Amiga + cursor keys: Page Up,
+  Page Down, Home, End
+
+The FULLSCREEN tooltype on the game's icon (take the brackets off) starts
+it full screen.
+
+
 What was done
 -------------
 - amiga/Makefile.amigaos: builds the program and the drawer
