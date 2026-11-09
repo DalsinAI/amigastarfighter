@@ -71,6 +71,7 @@ package: $(OUT)/$(PROG) $(ICONS) AMIGA_PORT.md COPYING LICENSES README.txt amiga
 	mkdir -p $(OUT)/data $(OUT)/Settings
 	cp data/credits.txt $(OUT)/data/
 	cp AMIGA_PORT.md $(OUT)/ReadMe
+	cp amiga/Controls $(OUT)/Controls
 	cp README.txt $(OUT)/README.txt
 	cp COPYING $(OUT)/COPYING.txt
 	cp LICENSES $(OUT)/LICENSES.txt
