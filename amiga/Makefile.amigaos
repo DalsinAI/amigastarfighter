@@ -77,7 +77,6 @@ package: $(OUT)/$(PROG) $(ICONS) AMIGA_PORT.md COPYING LICENSES README.txt amiga
 	cp amiga/icons/Starfighter.info amiga/icons/ReadMe.info \
 	   amiga/icons/README.txt.info amiga/icons/COPYING.txt.info \
 	   amiga/icons/LICENSES.txt.info $(OUT)/
-	cd $(OUT) && find . -mindepth 1 -type d | while read d; do cp $(CURDIR)/amiga/icons/Data.info "$$d.info"; done
 	cp amiga/icons/Starfighter-drawer.info $(DIST)/Starfighter.info
 
 $(OBJDIR)/amiga/%.o: amiga/%.c
