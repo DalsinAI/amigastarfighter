@@ -79,6 +79,7 @@ package: $(OUT)/$(PROG) $(ICONS) AMIGA_PORT.md COPYING LICENSES README.txt amiga
 	   amiga/icons/README.txt.info amiga/icons/COPYING.txt.info \
 	   amiga/icons/LICENSES.txt.info $(OUT)/
 	cp amiga/icons/Starfighter-drawer.info $(DIST)/Starfighter.info
+	cp package/Install-Starfighter package/Install-Starfighter.info $(DIST)/
 
 $(OBJDIR)/amiga/%.o: amiga/%.c
 	@mkdir -p $(dir $@)

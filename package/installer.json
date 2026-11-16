@@ -1,0 +1,21 @@
+{
+  "name": "Project: Starfighter",
+  "version": "2.4.0-amigaos3",
+  "drawer": "Starfighter",
+  "program": "Starfighter",
+  "cpu": "68040",
+  "fpu": true,
+  "space": 61000000,
+  "modules": [
+    "SDL2.module",
+    "SDL2_image.module",
+    "SDL2_mixer.module"
+  ],
+  "keep": [
+    "Settings",
+    "Screenshots"
+  ],
+  "parent": "Work:Games",
+  "badge": "../amiga/icons/art/starfighter.png",
+  "script": "Install-Starfighter"
+}

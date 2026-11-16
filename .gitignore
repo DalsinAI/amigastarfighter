@@ -50,3 +50,4 @@ misc/.deps
 project.xcworkspace/
 xcuserdata/
 *.xcuserdatad
+/build-amiga-package/
