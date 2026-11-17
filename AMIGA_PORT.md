@@ -16,6 +16,19 @@ Needs
   (the PNG pictures and the Ogg Vorbis sound and music).
 - About 46 MB of disk for the drawer.
 
+Installing
+----------
+
+The archive holds the Starfighter drawer and Install-Starfighter. Unpack it
+anywhere and double-click Install-Starfighter: it checks the CPU, the FPU
+and the GFOpenGPU modules, asks where the game goes (Work:Games by
+default) and copies the drawer there. Installing again over it keeps
+your Settings and Screenshots.
+package/installer.json is its spec (DalsinAI/amicradle's
+scripts/ports/port_installer.py writes the script and its icon), and
+package/build-amiga.sh builds the drawer and packs the archive.
+
+
 How to play
 -----------
 Double-click Starfighter in its drawer, or from a Shell:
